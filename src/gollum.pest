@@ -1,0 +1,7 @@
+whitespace = _{ " " | "\t" | "\n" | "\r" }
+comment = _{ "#" ~ (!("\r" | "\n") ~ any)* ~ "\n"* }
+word = _{"a..z" | "A..Z" | "_"}
+digit = _{"0..9"}
+ident = { word ~ (word | digit)* }
+
+program = { ident* }
