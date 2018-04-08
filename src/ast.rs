@@ -1,8 +1,8 @@
 #[derive(Clone, Debug)]
 pub struct Loc {
-    pub file : String,
-    pub begin : u32,
-    pub end : u32,
+    pub file: String,
+    pub begin: u32,
+    pub end: u32,
 }
 
 #[derive(Clone, Debug)]
