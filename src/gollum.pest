@@ -16,13 +16,19 @@ program = _ { soi ~ expression ~ eoi }
 // Expressions
 expression = _{ ( "(" ~ expression ~ ")" ) | expression_body }
 expression_body = {
-  (abstraction | boolean | variable | int ) ~ func_args? ~ ascription?
+  (condition | abstraction | boolean | variable | int ) ~ func_args? ~ ascription?
+}
+
+bracketed = _{ "{"~ expression ~ "}" }
+
+condition = {
+  "if" ~ expression ~ "then" ~ bracketed ~ "else" ~ bracketed
 }
 
 expressions = { expression ~ ( "," ~ expression )* ~ ","? }
 variables = { variable ~ ( "," ~ variable )* ~ ","? }
 
-abstraction = { "fn" ~ "(" ~ variables ~ ")" ~ "{" ~ expression ~ "}" }
+abstraction = { "fn" ~ "(" ~ variables ~ ")" ~ bracketed }
 
 func_args = { "(" ~ expressions ~ ")" }
 

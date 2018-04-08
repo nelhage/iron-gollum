@@ -62,6 +62,13 @@ fn build_type(path: &str, pair: pest::iterators::Pair<Rule>) -> Box<ast::AST> {
 fn build(path: &str, pair: pest::iterators::Pair<Rule>) -> Box<ast::AST> {
     let loc = pair_loc(path, &pair);
     let ast = match pair.as_rule() {
+        Rule::condition => {
+            let mut inner = pair.into_inner();
+            let cond = build(path, inner.next().unwrap());
+            let cons = build(path, inner.next().unwrap());
+            let alt = build(path, inner.next().unwrap());
+            ast::AST::If(loc, cond, cons, alt)
+        }
         Rule::typ => *build_type(path, pair),
         Rule::expression_body => {
             let mut inner = pair.into_inner();
@@ -134,6 +141,7 @@ mod tests {
             "x : x -> y -> z",
             "0 : x -> y",
             "f(0) : int -> int",
+            "if x then { 1 } else { 2 } ",
         ];
         for test in tests {
             let res = parse(&format!("test: {}", test), test);
@@ -143,7 +151,15 @@ mod tests {
 
     #[test]
     fn test_bad() {
-        let tests = vec!["-", "1.0", "'hi'", "\"hi\"", "(x", "fn(x) y"];
+        let tests = vec![
+            "-",
+            "1.0",
+            "'hi'",
+            "\"hi\"",
+            "(x",
+            "fn(x) y",
+            "if x then 1 else 2",
+        ];
         for test in tests {
             let res = parse(&format!("test: {}", test), test);
             assert!(!res.is_ok(), "parse({}): {:?}", test, res)
