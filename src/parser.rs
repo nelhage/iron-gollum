@@ -89,4 +89,14 @@ mod tests {
             assert!(res.is_ok(), "parse({}): {:?}", test, res)
         }
     }
+
+    #[test]
+    fn test_bad() {
+        let tests = vec!["-", "1.0", "'hi'", "\"hi\"", "(x", "fn(x) y"];
+        for test in tests {
+            let res = parse(&format!("test: {}", test), test);
+            assert!(!res.is_ok(), "parse({}): {:?}", test, res)
+        }
+    }
+
 }

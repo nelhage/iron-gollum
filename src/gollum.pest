@@ -8,13 +8,13 @@ variable = { ident }
 boolean = { "true" | "false" }
 int = { "-"? ~ digit+ }
 
-program = _ { expression }
+program = _ { soi ~ expression ~ eoi }
 expression = _{ ( "(" ~ expression ~ ")" ) | expression_body }
 expression_body = { (abstraction | boolean | variable | int ) ~ func_args? }
 
 expressions = { expression ~ ( "," ~ expression )* ~ ","? }
 variables = { variable ~ ( "," ~ variable )* ~ ","? }
 
-abstraction = { "fn" ~ "(" ~ variables ~ ")" ~ "{" ~ program ~ "}" }
+abstraction = { "fn" ~ "(" ~ variables ~ ")" ~ "{" ~ expression ~ "}" }
 
 func_args = _{ "(" ~ expressions ~ ")" }
