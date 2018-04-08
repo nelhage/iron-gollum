@@ -135,6 +135,8 @@ mod tests {
             "if f(x) { 1 } else { 0 }",
             "f(x)(y)",
             "(x)(y)",
+            "f()",
+            "fn(){0}",
         ];
         for test in tests {
             let res = parse(&format!("test: {}", test), test);

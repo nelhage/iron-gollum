@@ -24,8 +24,8 @@ condition = {
   "if" ~ expression ~ bracketed ~ "else" ~ bracketed
 }
 
-expressions = { expression ~ ( "," ~ expression )* ~ ","? }
-variables = { variable ~ ( "," ~ variable )* ~ ","? }
+expressions = { ( expression ~ ( "," ~ expression )* ~ ","? )? }
+variables = { ( variable ~ ( "," ~ variable )* ~ ","? )? }
 
 abstraction = { "fn" ~ "(" ~ variables ~ ")" ~ bracketed }
 
