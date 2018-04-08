@@ -12,6 +12,9 @@ program = _ { expression }
 expression = _{ ( "(" ~ expression ~ ")" ) | expression_body }
 expression_body = { (abstraction | boolean | variable | int ) ~ func_args? }
 
-abstraction = { "fn" ~ "(" ~ variable ~ ")" ~ "{" ~ program ~ "}" }
+expressions = { expression ~ ( "," ~ expression )* ~ ","? }
+variables = { variable ~ ( "," ~ variable )* ~ ","? }
 
-func_args = _{ "(" ~ expression ~ ")" }
+abstraction = { "fn" ~ "(" ~ variables ~ ")" ~ "{" ~ program ~ "}" }
+
+func_args = _{ "(" ~ expressions ~ ")" }

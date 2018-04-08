@@ -22,7 +22,12 @@ fn parse_int(val: &str) -> i64 {
     val.parse::<i64>().unwrap()
 }
 
-fn build(path: &str, pair: pest::iterators::Pair<Rule>) -> ast::AST {
+fn build_vec(path: &str, pair: pest::iterators::Pair<Rule>) -> Vec<Box<ast::AST>> {
+    let pairs = pair.into_inner();
+    pairs.map(|pair| build(path, pair)).collect()
+}
+
+fn build(path: &str, pair: pest::iterators::Pair<Rule>) -> Box<ast::AST> {
     let span = pair.clone().into_span();
     let loc = ast::Loc {
         file: path.to_string(),
@@ -35,17 +40,15 @@ fn build(path: &str, pair: pest::iterators::Pair<Rule>) -> ast::AST {
             let expr = build(path, inner.next().unwrap());
             let args = inner.next();
             match args {
-                None => expr,
-                Some(argp) => {
-                    ast::AST::Application(loc, Box::new(expr), Box::new(build(path, argp)))
-                }
+                None => *expr,
+                Some(argv) => ast::AST::Application(loc, expr, build_vec(path, argv)),
             }
         }
         Rule::abstraction => {
             let mut inner = pair.into_inner();
-            let var = build(path, inner.next().unwrap());
+            let vars = build_vec(path, inner.next().unwrap());
             let body = build(path, inner.next().unwrap());
-            ast::AST::Abstraction(loc, Box::new(var), Box::new(body))
+            ast::AST::Abstraction(loc, vars, body)
         }
         Rule::boolean => ast::AST::Boolean(loc, parse_bool(pair.as_str())),
         Rule::variable => ast::AST::Variable(loc, pair.as_str().to_string()),
@@ -53,10 +56,13 @@ fn build(path: &str, pair: pest::iterators::Pair<Rule>) -> ast::AST {
         _ => panic!("should not have generated a token: {:?}", pair.as_rule()),
     };
 
-    ast
+    Box::new(ast)
 }
 
-pub fn parse<'a, 'b>(path: &'a str, input: &'b str) -> Result<ast::AST, pest::Error<'b, Rule>> {
+pub fn parse<'a, 'b>(
+    path: &'a str,
+    input: &'b str,
+) -> Result<Box<ast::AST>, pest::Error<'b, Rule>> {
     let mut pairs = Gollum::parse(Rule::program, input)?;
 
     Ok(build(path, pairs.next().unwrap()))
