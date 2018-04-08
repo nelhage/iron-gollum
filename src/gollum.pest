@@ -1,20 +1,32 @@
+// Low-level helpers
 whitespace = _{ " " | "\t" | "\n" | "\r" }
 comment = _{ "#" ~ (!("\r" | "\n") ~ any)* ~ "\n"* }
-word = _{ 'a'..'z' | 'A'..'Z' | "_"}
-digit = _{'0'..'9'}
+word = _{ 'a'..'z' | 'A'..'Z' | "_" }
+digit = _{ '0'..'9' }
 ident = _{ word ~ (word | digit)* }
 
-variable = { ident }
-boolean = { "true" | "false" }
-int = { "-"? ~ digit+ }
+// Atoms
+variable = @{ ident }
+boolean = @{ "true" | "false" }
+int = @{ "-"? ~ digit+ }
 
+// Top-level term
 program = _ { soi ~ expression ~ eoi }
+
+// Expressions
 expression = _{ ( "(" ~ expression ~ ")" ) | expression_body }
-expression_body = { (abstraction | boolean | variable | int ) ~ func_args? }
+expression_body = {
+  (abstraction | boolean | variable | int ) ~ func_args? ~ ascription?
+}
 
 expressions = { expression ~ ( "," ~ expression )* ~ ","? }
 variables = { variable ~ ( "," ~ variable )* ~ ","? }
 
 abstraction = { "fn" ~ "(" ~ variables ~ ")" ~ "{" ~ expression ~ "}" }
 
-func_args = _{ "(" ~ expressions ~ ")" }
+func_args = { "(" ~ expressions ~ ")" }
+
+ascription = { ":" ~ typ }
+
+// Types
+typ = { variable ~ ( "->" ~ typ )* }
