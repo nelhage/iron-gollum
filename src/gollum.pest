@@ -14,15 +14,14 @@ int = @{ "-"? ~ digit+ }
 program = _ { soi ~ expression ~ eoi }
 
 // Expressions
-expression = _{ ( "(" ~ expression ~ ")" ) | expression_body }
-expression_body = {
-  (condition | abstraction | boolean | variable | int ) ~ func_args? ~ ascription?
-}
+expression = { expression_paren ~ func_args* ~ ascription? }
+expression_paren = _{ ( "(" ~ expression ~ ")" ) | expression_body }
+expression_body = _{ condition | abstraction | boolean | variable | int }
 
 bracketed = _{ "{"~ expression ~ "}" }
 
 condition = {
-  "if" ~ expression ~ "then" ~ bracketed ~ "else" ~ bracketed
+  "if" ~ expression ~ bracketed ~ "else" ~ bracketed
 }
 
 expressions = { expression ~ ( "," ~ expression )* ~ ","? }

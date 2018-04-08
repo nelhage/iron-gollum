@@ -70,32 +70,22 @@ fn build(path: &str, pair: pest::iterators::Pair<Rule>) -> Box<ast::AST> {
             ast::AST::If(loc, cond, cons, alt)
         }
         Rule::typ => *build_type(path, pair),
-        Rule::expression_body => {
+        Rule::expression => {
             let mut inner = pair.into_inner();
             let mut expr = *build(path, inner.next().unwrap());
-            let mut args = inner.next();
-            if let Some(argv) = args.clone() {
-                if argv.as_rule() == Rule::func_args {
-                    expr = ast::AST::Application(
-                        loc.clone(),
-                        Box::new(expr),
-                        build_vec(path, argv.into_inner().next().unwrap()),
-                    );
-                    args = inner.next();
-                }
-            }
-            if let Some(ascribe) = args {
-                if ascribe.as_rule() != Rule::ascription {
-                    panic!("unexpected: {:?}", ascribe)
-                }
-                expr = ast::AST::Ascription(
-                    loc,
+            inner.fold(expr, |expr, pair| match pair.as_rule() {
+                Rule::func_args => ast::AST::Application(
+                    loc.clone(),
                     Box::new(expr),
-                    build(path, ascribe.into_inner().next().unwrap()),
-                )
-            }
-
-            expr
+                    build_vec(path, pair.into_inner().next().unwrap()),
+                ),
+                Rule::ascription => ast::AST::Ascription(
+                    loc.clone(),
+                    Box::new(expr),
+                    build(path, pair.into_inner().next().unwrap()),
+                ),
+                _ => panic!("unexpected: {:?}", pair.as_rule()),
+            })
         }
         Rule::abstraction => {
             let mut inner = pair.into_inner();
@@ -141,7 +131,10 @@ mod tests {
             "x : x -> y -> z",
             "0 : x -> y",
             "f(0) : int -> int",
-            "if x then { 1 } else { 2 } ",
+            "if x { 1 } else { 2 } ",
+            "if f(x) { 1 } else { 0 }",
+            "f(x)(y)",
+            "(x)(y)",
         ];
         for test in tests {
             let res = parse(&format!("test: {}", test), test);
@@ -158,7 +151,7 @@ mod tests {
             "\"hi\"",
             "(x",
             "fn(x) y",
-            "if x then 1 else 2",
+            "if x 1 else 2",
         ];
         for test in tests {
             let res = parse(&format!("test: {}", test), test);
