@@ -3,9 +3,14 @@ extern crate pest;
 extern crate pest_derive;
 
 mod parser;
+mod ast;
 
 fn main() {
-    let pairs = parser::parse("a1 b2").unwrap_or_else(|e| panic!("{}", e));
+    let mut args = std::env::args();
+    args.next();
 
-    println!("{:?}", pairs);
+    let arg = args.next().unwrap_or("a1".to_string());
+    let ast = parser::parse("-e", &arg).unwrap_or_else(|e| panic!("parse err: {}", e));
+
+    println!("{:?}", ast);
 }
