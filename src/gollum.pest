@@ -25,9 +25,10 @@ condition = {
 }
 
 expressions = { ( expression ~ ( "," ~ expression )* ~ ","? )? }
-variables = { ( variable ~ ( "," ~ variable )* ~ ","? )? }
 
-abstraction = { "fn" ~ "(" ~ variables ~ ")" ~ bracketed }
+abstraction = { "fn" ~ "(" ~ arg_list ~ ")" ~ bracketed }
+arg_list = { ( typed_var ~ ( "," ~ typed_var )* ~ ","? )? }
+typed_var = { variable ~ ascription? }
 
 func_args = { "(" ~ expressions ~ ")" }
 

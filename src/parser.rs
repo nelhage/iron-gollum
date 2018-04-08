@@ -87,6 +87,19 @@ fn build(path: &str, pair: pest::iterators::Pair<Rule>) -> Box<ast::AST> {
                 _ => panic!("unexpected: {:?}", pair.as_rule()),
             })
         }
+        Rule::typed_var => {
+            let mut inner = pair.into_inner();
+            let var = build(path, inner.next().unwrap());
+            match inner.next() {
+                Some(pair) => {
+                    if pair.as_rule() != Rule::ascription {
+                        panic!("expected ascription")
+                    }
+                    ast::AST::Ascription(loc, var, build(path, pair.into_inner().next().unwrap()))
+                }
+                None => *var,
+            }
+        }
         Rule::abstraction => {
             let mut inner = pair.into_inner();
             let vars = build_vec(path, inner.next().unwrap());
@@ -137,6 +150,7 @@ mod tests {
             "(x)(y)",
             "f()",
             "fn(){0}",
+            "fn(x : int) { y }",
         ];
         for test in tests {
             let res = parse(&format!("test: {}", test), test);
