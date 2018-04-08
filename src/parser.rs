@@ -67,3 +67,26 @@ pub fn parse<'a, 'b>(
 
     Ok(build(path, pairs.next().unwrap()))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parser() {
+        let tests = vec![
+            "1",
+            "false",
+            "hello",
+            "f(x)",
+            "fn(x) { y }",
+            "(x)",
+            "f(x, y, z)",
+            "fn(x, y) { z }",
+        ];
+        for test in tests {
+            let res = parse(&format!("test: {}", test), test);
+            assert!(res.is_ok(), "parse({}): {:?}", test, res)
+        }
+    }
+}
