@@ -8,4 +8,10 @@ variable = { ident }
 boolean = { "true" | "false" }
 int = { "-"? ~ digit+ }
 
-program = _{ boolean | variable | int }
+program = _ { expression }
+expression = _{ ( "(" ~ expression ~ ")" ) | expression_body }
+expression_body = { (abstraction | boolean | variable | int ) ~ func_args? }
+
+abstraction = { "fn" ~ "(" ~ variable ~ ")" ~ "{" ~ program ~ "}" }
+
+func_args = _{ "(" ~ expression ~ ")" }
