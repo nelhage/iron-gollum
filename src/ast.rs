@@ -1,29 +1,29 @@
 #[derive(Clone, Debug)]
-pub struct Loc {
-    pub file: String,
+pub struct Loc<'a> {
+    pub file: &'a str,
     pub begin: u32,
     pub end: u32,
 }
 
 #[derive(Clone, Debug)]
-pub enum AST {
-    Variable(Loc, String),
-    Integer(Loc, i64),
-    Boolean(Loc, bool),
+pub enum AST<'a> {
+    Variable(Loc<'a>, &'a str),
+    Integer(Loc<'a>, i64),
+    Boolean(Loc<'a>, bool),
 
-    Application(Loc, Box<AST>, Vec<Box<AST>>),
-    Abstraction(Loc, Vec<Box<AST>>, Box<AST>),
-    Ascription(Loc, Box<AST>, Box<AST>),
+    Application(Loc<'a>, Box<AST<'a>>, Vec<Box<AST<'a>>>),
+    Abstraction(Loc<'a>, Vec<Box<AST<'a>>>, Box<AST<'a>>),
+    Ascription(Loc<'a>, Box<AST<'a>>, Box<AST<'a>>),
 
-    If(Loc, Box<AST>, Box<AST>, Box<AST>),
+    If(Loc<'a>, Box<AST<'a>>, Box<AST<'a>>, Box<AST<'a>>),
 
-    TyName(Loc, String),
-    TyFn(Loc, Box<AST>, Box<AST>),
+    TyName(Loc<'a>, &'a str),
+    TyFn(Loc<'a>, Box<AST<'a>>, Box<AST<'a>>),
 }
 
 
-impl AST {
-    pub fn loc(&self) -> Loc {
+impl<'a> AST<'a> {
+    pub fn loc(&self) -> Loc<'a> {
         match *self {
             AST::Variable(ref loc, _) => loc,
             AST::Integer(ref loc, _) => loc,
