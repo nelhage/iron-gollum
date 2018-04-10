@@ -6,3 +6,4 @@ authors = ["Nelson Elhage <nelhage@nelhage.com>"]
 [dependencies]
 pest = "^1.0"
 pest_derive = "^1.0"
+clap = "^2.31"
