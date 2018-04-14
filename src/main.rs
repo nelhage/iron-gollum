@@ -6,6 +6,9 @@ extern crate clap;
 
 mod parser;
 mod ast;
+mod types;
+mod globals;
+mod typecheck;
 
 use std::fs::File;
 use std::io::Read;
@@ -21,6 +24,11 @@ fn main() {
                 .short("e")
                 .value_name("CODE")
                 .help("Evaluate code from command-line"),
+        )
+        .arg(
+            clap::Arg::with_name("print-ast")
+                .long("print-ast")
+                .help("Print the parsed AST"),
         )
         .arg(clap::Arg::with_name("input").help("Source file").index(1))
         .get_matches();
@@ -44,5 +52,12 @@ fn main() {
 
     let ast = parser::parse(&path, &src).unwrap_or_else(|e| panic!("parse err: {}", e));
 
-    println!("{:?}", ast);
+    if args.is_present("print-ast") {
+        println!("ast: {:?}", ast);
+    }
+
+    match typecheck::typecheck(&ast, globals::global_env()) {
+        Ok(ty) => println!("type: {:?}", ty),
+        Err(e) => println!("typecheck: err: {:?}", e),
+    }
 }
