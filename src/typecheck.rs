@@ -86,6 +86,19 @@ pub fn typecheck<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResul
 
             Err(TypeError::BadDecl(arg.loc()))
         }
+        ast::AST::If(_, ref cond, ref cons, ref alt) => {
+            let cond_ty = typecheck(cond, Rc::clone(&env))?;
+            let cons_ty = typecheck(cons, Rc::clone(&env))?;
+            let alt_ty = typecheck(alt, Rc::clone(&env))?;
+
+            if cond_ty != globals::bool() {
+                return Err(TypeError::Mismatch(ast.loc(), globals::bool(), cond_ty));
+            }
+            if cons_ty != alt_ty {
+                return Err(TypeError::Mismatch(ast.loc(), cons_ty, alt_ty));
+            }
+            Ok(cons_ty)
+        }
         _ => Err(TypeError::Generic(ast.loc(), "Unimplemented")),
     }
 }
