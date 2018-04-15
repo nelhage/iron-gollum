@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use ast;
-use ast::Name;
+use names::Name;
 
 use types;
 use types::Type;
@@ -98,6 +98,15 @@ pub fn typecheck<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResul
                 return Err(TypeError::Mismatch(ast.loc(), cons_ty, alt_ty));
             }
             Ok(cons_ty)
+        }
+        ast::AST::Ascription(_, ref val, ref ty) => {
+            let got_ty = typecheck(val, Rc::clone(&env))?;
+            let exp_ty = ast_to_type(ty, Rc::clone(&env))?;
+            if got_ty != exp_ty {
+                Err(TypeError::Mismatch(ast.loc(), exp_ty, got_ty))
+            } else {
+                Ok(got_ty)
+            }
         }
         _ => Err(TypeError::Generic(ast.loc(), "Unimplemented")),
     }

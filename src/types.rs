@@ -1,4 +1,4 @@
-pub use ast::Name;
+use names::Name;
 
 use std::rc::Rc;
 use std::collections::HashMap;

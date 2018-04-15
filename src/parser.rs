@@ -1,4 +1,5 @@
 use ast;
+use names;
 
 use pest;
 use pest::Parser;
@@ -53,12 +54,7 @@ fn build_type<'a>(path: &'a str, pair: pest::iterators::Pair<'a, Rule>) -> Box<a
                 Box::new(ast::AST::TyFn(floc, arg, rv))
             })
         }
-        Rule::variable => Box::new(ast::AST::TyName(
-            loc,
-            ast::Name {
-                name: pair.as_str(),
-            },
-        )),
+        Rule::variable => Box::new(ast::AST::TyName(loc, names::ident(pair.as_str()))),
         _ => panic!("should not have generated a token: {:?}", pair.as_rule()),
     };
     ast
@@ -115,12 +111,7 @@ fn build<'a>(path: &'a str, pair: pest::iterators::Pair<'a, Rule>) -> Box<ast::A
             })
         }
         Rule::boolean => ast::AST::Boolean(loc, parse_bool(pair.as_str())),
-        Rule::variable => ast::AST::Variable(
-            loc,
-            ast::Name {
-                name: pair.as_str(),
-            },
-        ),
+        Rule::variable => ast::AST::Variable(loc, names::ident(pair.as_str())),
         Rule::int => ast::AST::Integer(loc, parse_int(pair.as_str())),
         _ => panic!("should not have generated a token: {:?}", pair.as_rule()),
     };

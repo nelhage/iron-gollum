@@ -1,27 +1,10 @@
-use std::fmt;
+use names::Name;
 
 #[derive(Clone, Debug)]
 pub struct Loc<'a> {
     pub file: &'a str,
     pub begin: u32,
     pub end: u32,
-}
-
-#[derive(Hash, PartialEq, Eq, Clone)]
-pub struct Name<'a> {
-    pub name: &'a str,
-}
-
-impl<'a> fmt::Debug for Name<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        self.name.fmt(f)
-    }
-}
-
-impl<'a> fmt::Display for Name<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        self.name.fmt(f)
-    }
 }
 
 #[derive(Clone, Debug)]

@@ -6,6 +6,7 @@ extern crate pest_derive;
 
 extern crate clap;
 
+mod names;
 mod parser;
 mod ast;
 mod types;

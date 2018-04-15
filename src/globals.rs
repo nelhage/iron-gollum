@@ -1,18 +1,19 @@
-use types::{Name, Type, TypeEnv};
+use names;
+use types::{Type, TypeEnv};
 
 use std::rc::Rc;
 
 pub fn global_env() -> Rc<TypeEnv<'static>> {
     TypeEnv::from_types(&[
-        (Name { name: "bool" }, bool()),
-        (Name { name: "int" }, integer()),
+        (names::ident("bool"), bool()),
+        (names::ident("int"), integer()),
     ])
 }
 
 pub fn bool() -> Rc<Type<'static>> {
-    Rc::new(Type::Primitive(Name { name: "bool" }))
+    Rc::new(Type::Primitive(names::ident("bool")))
 }
 
 pub fn integer() -> Rc<Type<'static>> {
-    Rc::new(Type::Primitive(Name { name: "int" }))
+    Rc::new(Type::Primitive(names::ident("int")))
 }
