@@ -111,3 +111,36 @@ pub fn typecheck<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResul
         _ => Err(TypeError::Generic(ast.loc(), "Unimplemented")),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use parser;
+    use globals;
+
+    #[test]
+    fn test_typecheck() {
+        let tests = vec![("1", "int"), ("true", "bool")];
+        for (src, expect) in tests {
+            let path = &format!("test: {}", src);
+            match (parser::parse(path, src), parser::parse_type(path, expect)) {
+                (Ok(ast), Ok(ty_ast)) => {
+                    let got = typecheck(&ast, globals::global_env());
+                    let ty = ast_to_type(&ty_ast, globals::global_env());
+                    assert!(got.is_ok(), format!("typecheck: {:?}", got));
+                    assert!(ty.is_ok(), format!("expect: {:?}", ty));
+                    assert!(
+                        got.as_ref().unwrap() == ty.as_ref().unwrap(),
+                        format!("tc({}) = {:?} != {:?}", src, got, ty)
+                    );
+                }
+                (Err(err), _) => assert!(false, format!("parse({}): {:?}", src, err)),
+                (_, Err(err)) => assert!(false, format!("parse_type({}): {:?}", expect, err)),
+            }
+        }
+    }
+
+    #[test]
+    fn test_bad() {}
+
+}

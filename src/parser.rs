@@ -128,6 +128,15 @@ pub fn parse<'a>(
     Ok(build(path, pairs.next().unwrap()))
 }
 
+pub fn parse_type<'a>(
+    path: &'a str,
+    input: &'a str,
+) -> Result<Box<ast::AST<'a>>, pest::Error<'a, Rule>> {
+    let mut pairs = Gollum::parse(Rule::typ, input)?;
+
+    Ok(build(path, pairs.next().unwrap()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

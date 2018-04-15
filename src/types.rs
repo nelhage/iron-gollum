@@ -52,7 +52,7 @@ impl<'a> TypeEnv<'a> {
         if let ok @ Some(_) = self.types.get(var) {
             ok.cloned()
         } else if let Some(ref env) = self.parent {
-            env.lookup(var)
+            env.lookup_type(var)
         } else {
             None
         }
