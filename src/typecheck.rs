@@ -121,7 +121,21 @@ mod tests {
 
     #[test]
     fn test_typecheck() {
-        let tests = vec![("1", "int"), ("true", "bool")];
+        let tests = vec![
+            ("1", "int"),
+            ("true", "bool"),
+            ("fn(x : int, y : int) { add(x,y) }", "int -> int -> int"),
+            (
+                "fn(fact: int -> int, x: int) {
+                   if iszero(x) {
+                     1
+                   } else {
+                     mul(x, fact(dec(x)))
+                   }
+                 }",
+                "(int -> int) -> int -> int",
+            ),
+        ];
         for (src, expect) in tests {
             let path = &format!("test: {}", src);
             match (parser::parse(path, src), parser::parse_type(path, expect)) {

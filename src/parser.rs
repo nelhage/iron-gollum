@@ -132,7 +132,7 @@ pub fn parse_type<'a>(
     path: &'a str,
     input: &'a str,
 ) -> Result<Box<ast::AST<'a>>, pest::Error<'a, Rule>> {
-    let mut pairs = Gollum::parse(Rule::typ, input)?;
+    let mut pairs = Gollum::parse(Rule::typeexpr, input)?;
 
     Ok(build(path, pairs.next().unwrap()))
 }
@@ -156,6 +156,9 @@ mod tests {
             "1 ",
             "x : x -> y -> z",
             "0 : x -> y",
+            "x : (int)",
+            "x : (((int)))",
+            "x : (int -> int) -> (int)",
             "f(0) : int -> int",
             "if x { 1 } else { 2 } ",
             "if f(x) { 1 } else { 0 }",

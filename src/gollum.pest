@@ -11,7 +11,8 @@ boolean = @{ "true" | "false" }
 int = @{ "-"? ~ digit+ }
 
 // Top-level term
-program = _ { soi ~ expression ~ eoi }
+program = _{ soi ~ expression ~ eoi }
+typeexpr = _{ soi ~ typ ~ eoi }
 
 // Expressions
 expression = { expression_paren ~ func_args* ~ ascription? }
@@ -35,4 +36,5 @@ func_args = { "(" ~ expressions ~ ")" }
 ascription = { ":" ~ typ }
 
 // Types
-typ = { variable ~ ( "->" ~ typ )* }
+typ = { typ_lhs ~ ( "->" ~ typ )* }
+typ_lhs = _{ variable | ("(" ~ typ ~ ")") }
