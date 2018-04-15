@@ -10,6 +10,7 @@ mod names;
 mod parser;
 mod ast;
 mod types;
+mod env;
 mod globals;
 mod typecheck;
 
@@ -59,7 +60,7 @@ fn main() {
         println!("ast: {:?}", ast);
     }
 
-    match typecheck::typecheck(&ast, globals::global_env()) {
+    match typecheck::typecheck(&globals::global_env(), &ast) {
         Ok(ty) => println!("type: {:?}", ty),
         Err(e) => println!("typecheck: err: {:?}", e),
     }

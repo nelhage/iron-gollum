@@ -6,6 +6,8 @@ use names::Name;
 use types;
 use types::Type;
 
+use env::TypeEnv;
+
 use globals;
 
 #[derive(Debug)]
@@ -34,7 +36,7 @@ fn tc_apply<'a>(
     }
 }
 
-fn ast_to_type<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResult<'a> {
+fn ast_to_type<'a>(env: &Rc<TypeEnv<'a>>, ast: &ast::AST<'a>) -> TCResult<'a> {
     match *ast {
         ast::AST::TyName(_, ref tyvar) => {
             if let Some(ty) = env.lookup_type(tyvar) {
@@ -44,15 +46,15 @@ fn ast_to_type<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResult<
             }
         }
         ast::AST::TyFn(_, ref dom, ref range) => {
-            let dom_ty = ast_to_type(dom, Rc::clone(&env))?;
-            let range_ty = ast_to_type(range, Rc::clone(&env))?;
+            let dom_ty = ast_to_type(&env, dom)?;
+            let range_ty = ast_to_type(&env, range)?;
             Ok(Rc::new(Type::Function(dom_ty, range_ty)))
         }
         _ => Err(TypeError::BadType(ast.loc())),
     }
 }
 
-pub fn typecheck<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResult<'a> {
+pub fn typecheck<'a>(env: &Rc<TypeEnv<'a>>, ast: &ast::AST<'a>) -> TCResult<'a> {
     match *ast {
         ast::AST::Integer(..) => Ok(globals::integer()),
         ast::AST::Boolean(..) => Ok(globals::bool()),
@@ -64,8 +66,8 @@ pub fn typecheck<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResul
             }
         }
         ast::AST::Application(_, ref func, ref arg) => {
-            let func_ty = typecheck(func, Rc::clone(&env))?;
-            let arg_ty = typecheck(arg, Rc::clone(&env))?;
+            let func_ty = typecheck(&env, func)?;
+            let arg_ty = typecheck(&env, arg)?;
             if let types::Type::Function(ref dom, ref range) = *func_ty {
                 tc_apply(&ast.loc(), Rc::clone(dom), Rc::clone(range), arg_ty)
             } else {
@@ -74,12 +76,11 @@ pub fn typecheck<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResul
         }
         ast::AST::Abstraction(_, ref arg, ref body) => {
             if let ast::AST::Ascription(_, ref vbox, ref ty) = **arg {
-                let ty = ast_to_type(ty, Rc::clone(&env))?;
+                let ty = ast_to_type(&env, ty)?;
 
                 if let ast::AST::Variable(_, ref var) = **vbox {
-                    let frame =
-                        types::TypeEnv::with_bindings(&env, &[(var.clone(), Rc::clone(&ty))]);
-                    let result_ty = typecheck(body, frame)?;
+                    let frame = TypeEnv::with_bindings(&env, &[(var.clone(), Rc::clone(&ty))]);
+                    let result_ty = typecheck(&frame, body)?;
                     return Ok(Rc::new(types::Type::Function(Rc::clone(&ty), result_ty)));
                 }
             }
@@ -87,9 +88,9 @@ pub fn typecheck<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResul
             Err(TypeError::BadDecl(arg.loc()))
         }
         ast::AST::If(_, ref cond, ref cons, ref alt) => {
-            let cond_ty = typecheck(cond, Rc::clone(&env))?;
-            let cons_ty = typecheck(cons, Rc::clone(&env))?;
-            let alt_ty = typecheck(alt, Rc::clone(&env))?;
+            let cond_ty = typecheck(&env, cond)?;
+            let cons_ty = typecheck(&env, cons)?;
+            let alt_ty = typecheck(&env, alt)?;
 
             if cond_ty != globals::bool() {
                 return Err(TypeError::Mismatch(ast.loc(), globals::bool(), cond_ty));
@@ -100,8 +101,8 @@ pub fn typecheck<'a>(ast: &ast::AST<'a>, env: Rc<types::TypeEnv<'a>>) -> TCResul
             Ok(cons_ty)
         }
         ast::AST::Ascription(_, ref val, ref ty) => {
-            let got_ty = typecheck(val, Rc::clone(&env))?;
-            let exp_ty = ast_to_type(ty, Rc::clone(&env))?;
+            let got_ty = typecheck(&env, val)?;
+            let exp_ty = ast_to_type(&env, ty)?;
             if got_ty != exp_ty {
                 Err(TypeError::Mismatch(ast.loc(), exp_ty, got_ty))
             } else {
@@ -125,8 +126,8 @@ mod tests {
             let path = &format!("test: {}", src);
             match (parser::parse(path, src), parser::parse_type(path, expect)) {
                 (Ok(ast), Ok(ty_ast)) => {
-                    let got = typecheck(&ast, globals::global_env());
-                    let ty = ast_to_type(&ty_ast, globals::global_env());
+                    let got = typecheck(&globals::global_env(), &ast);
+                    let ty = ast_to_type(&globals::global_env(), &ty_ast);
                     assert!(got.is_ok(), format!("typecheck: {:?}", got));
                     assert!(ty.is_ok(), format!("expect: {:?}", ty));
                     assert!(

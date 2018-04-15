@@ -1,5 +1,6 @@
 use names;
-use types::{Type, TypeEnv};
+use types::Type;
+use env::TypeEnv;
 
 use std::rc::Rc;
 
