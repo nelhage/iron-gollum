@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Clone, Debug)]
 pub struct Loc<'a> {
     pub file: &'a str,
@@ -5,22 +7,38 @@ pub struct Loc<'a> {
     pub end: u32,
 }
 
+#[derive(Hash, PartialEq, Eq, Clone)]
+pub struct Name<'a> {
+    pub name: &'a str,
+}
+
+impl<'a> fmt::Debug for Name<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        self.name.fmt(f)
+    }
+}
+
+impl<'a> fmt::Display for Name<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        self.name.fmt(f)
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum AST<'a> {
-    Variable(Loc<'a>, &'a str),
+    Variable(Loc<'a>, Name<'a>),
     Integer(Loc<'a>, i64),
     Boolean(Loc<'a>, bool),
 
-    Application(Loc<'a>, Box<AST<'a>>, Vec<Box<AST<'a>>>),
-    Abstraction(Loc<'a>, Vec<Box<AST<'a>>>, Box<AST<'a>>),
+    Application(Loc<'a>, Box<AST<'a>>, Box<AST<'a>>),
+    Abstraction(Loc<'a>, Box<AST<'a>>, Box<AST<'a>>),
     Ascription(Loc<'a>, Box<AST<'a>>, Box<AST<'a>>),
 
     If(Loc<'a>, Box<AST<'a>>, Box<AST<'a>>, Box<AST<'a>>),
 
-    TyName(Loc<'a>, &'a str),
+    TyName(Loc<'a>, Name<'a>),
     TyFn(Loc<'a>, Box<AST<'a>>, Box<AST<'a>>),
 }
-
 
 impl<'a> AST<'a> {
     pub fn loc(&self) -> Loc<'a> {
@@ -33,7 +51,7 @@ impl<'a> AST<'a> {
             AST::Ascription(ref loc, _, _) => loc,
             AST::If(ref loc, _, _, _) => loc,
             AST::TyName(ref loc, _) => loc,
-            AST::TyFn(ref loc, _,_) => loc,
+            AST::TyFn(ref loc, _, _) => loc,
         }.clone()
     }
 }

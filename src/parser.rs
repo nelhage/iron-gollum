@@ -53,7 +53,12 @@ fn build_type<'a>(path: &'a str, pair: pest::iterators::Pair<'a, Rule>) -> Box<a
                 Box::new(ast::AST::TyFn(floc, arg, rv))
             })
         }
-        Rule::variable => Box::new(ast::AST::TyName(loc, pair.as_str())),
+        Rule::variable => Box::new(ast::AST::TyName(
+            loc,
+            ast::Name {
+                name: pair.as_str(),
+            },
+        )),
         _ => panic!("should not have generated a token: {:?}", pair.as_rule()),
     };
     ast
@@ -74,11 +79,11 @@ fn build<'a>(path: &'a str, pair: pest::iterators::Pair<'a, Rule>) -> Box<ast::A
             let mut inner = pair.into_inner();
             let mut expr = *build(path, inner.next().unwrap());
             inner.fold(expr, |expr, pair| match pair.as_rule() {
-                Rule::func_args => ast::AST::Application(
-                    loc.clone(),
-                    Box::new(expr),
-                    build_vec(path, pair.into_inner().next().unwrap()),
-                ),
+                Rule::func_args => build_vec(path, pair.into_inner().next().unwrap())
+                    .into_iter()
+                    .fold(expr, |ast, arg| {
+                        ast::AST::Application(loc.clone(), Box::new(ast), arg)
+                    }),
                 Rule::ascription => ast::AST::Ascription(
                     loc.clone(),
                     Box::new(expr),
@@ -102,12 +107,20 @@ fn build<'a>(path: &'a str, pair: pest::iterators::Pair<'a, Rule>) -> Box<ast::A
         }
         Rule::abstraction => {
             let mut inner = pair.into_inner();
-            let vars = build_vec(path, inner.next().unwrap());
+            let mut vars = build_vec(path, inner.next().unwrap());
             let body = build(path, inner.next().unwrap());
-            ast::AST::Abstraction(loc, vars, body)
+            vars.reverse();
+            vars.into_iter().fold(*body, |ast, arg| {
+                ast::AST::Abstraction(loc.clone(), arg, Box::new(ast))
+            })
         }
         Rule::boolean => ast::AST::Boolean(loc, parse_bool(pair.as_str())),
-        Rule::variable => ast::AST::Variable(loc, pair.as_str()),
+        Rule::variable => ast::AST::Variable(
+            loc,
+            ast::Name {
+                name: pair.as_str(),
+            },
+        ),
         Rule::int => ast::AST::Integer(loc, parse_int(pair.as_str())),
         _ => panic!("should not have generated a token: {:?}", pair.as_rule()),
     };
