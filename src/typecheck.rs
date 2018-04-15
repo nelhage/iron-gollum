@@ -135,6 +135,12 @@ mod tests {
                  }",
                 "(int -> int) -> int -> int",
             ),
+            (
+                "fn(Y: ((int -> int) -> int -> int) -> int -> int, f: (int -> int) -> int -> int) {
+                   Y(f)
+                 }"
+                ,"(((int -> int) -> int -> int) -> int -> int) -> ((int->int) -> int -> int) -> int -> int",
+            )
         ];
         for (src, expect) in tests {
             let path = &format!("test: {}", src);
