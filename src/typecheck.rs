@@ -39,7 +39,7 @@ fn tc_apply<'a>(
 fn ast_to_type<'a>(env: &Rc<TypeEnv<'a>>, ast: &ast::AST<'a>) -> TCResult<'a> {
     match *ast {
         ast::AST::TyName(_, ref tyvar) => {
-            if let Some(ty) = env.lookup_type(tyvar) {
+            if let Some(ty) = env.lookup(tyvar) {
                 Ok(ty)
             } else {
                 Err(TypeError::UnboundType(ast.loc(), tyvar.clone()))

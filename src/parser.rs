@@ -54,7 +54,7 @@ fn build_type<'a>(path: &'a str, pair: pest::iterators::Pair<'a, Rule>) -> Box<a
                 Box::new(ast::AST::TyFn(floc, arg, rv))
             })
         }
-        Rule::variable => Box::new(ast::AST::TyName(loc, names::ident(pair.as_str()))),
+        Rule::typ_variable => Box::new(ast::AST::TyName(loc, names::typ(pair.as_str()))),
         _ => panic!("should not have generated a token: {:?}", pair.as_rule()),
     };
     ast

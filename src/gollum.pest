@@ -37,4 +37,5 @@ ascription = { ":" ~ typ }
 
 // Types
 typ = { typ_lhs ~ ( "->" ~ typ )* }
-typ_lhs = _{ variable | ("(" ~ typ ~ ")") }
+typ_lhs = _{ typ_variable | ("(" ~ typ ~ ")") }
+typ_variable = @{ ident }
