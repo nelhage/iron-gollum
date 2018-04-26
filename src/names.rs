@@ -4,7 +4,7 @@ use std::fmt;
 pub enum Name<'a> {
     Ident(&'a str),
     Type(&'a str),
-    Unique(&'a str, i32),
+    Unique(Box<Name<'a>>, i32),
 }
 
 pub fn ident(s: &str) -> Name {
@@ -20,7 +20,7 @@ impl<'a> fmt::Display for Name<'a> {
         match *self {
             Name::Ident(s) => s.fmt(f),
             Name::Type(s) => s.fmt(f),
-            Name::Unique(s, i) => f.write_fmt(format_args!("{}${}", s, i)),
+            Name::Unique(ref s, i) => f.write_fmt(format_args!("{}${}", *s, i)),
         }
     }
 }
