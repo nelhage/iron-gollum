@@ -10,9 +10,9 @@ pub enum Type<'a> {
     Function(Rc<Type<'a>>, Rc<Type<'a>>),
 }
 
-pub fn map_vars<'a, 'b, F>(ty: &Rc<Type<'a>>, map: &mut F) -> Rc<Type<'a>>
+pub fn map_vars<'a, F>(ty: &Rc<Type<'a>>, map: &mut F) -> Rc<Type<'a>>
 where
-    F: 'b + FnMut(Rc<Type<'a>>) -> Rc<Type<'a>>,
+    F: FnMut(Rc<Type<'a>>) -> Rc<Type<'a>>,
 {
     match &**ty {
         &Type::Primitive(_) => Rc::clone(ty),
