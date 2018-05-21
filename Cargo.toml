@@ -7,3 +7,12 @@ authors = ["Nelson Elhage <nelhage@nelhage.com>"]
 pest = "^1.0"
 pest_derive = "^1.0"
 clap = "^2.31"
+glob = "0.2.11"
+
+[lib]
+name = "iron_golem"
+path = "src/lib.rs"
+
+[[bin]]
+name = "iron-golem"
+path = "src/main.rs"

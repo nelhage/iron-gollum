@@ -1,18 +1,9 @@
 #![allow(dead_code)]
 
-extern crate pest;
-#[macro_use]
-extern crate pest_derive;
-
 extern crate clap;
 
-mod names;
-mod parser;
-mod ast;
-mod types;
-mod env;
-mod globals;
-mod typecheck;
+extern crate iron_golem;
+use iron_golem::{parser,globals,typecheck};
 
 use std::fs::File;
 use std::io::Read;
