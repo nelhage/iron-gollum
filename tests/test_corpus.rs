@@ -20,35 +20,17 @@ fn read_file(path: &Path) -> String {
 
 #[test]
 fn test_typecheck() {
-    for entry in glob("test/testdata/type/*.gol").expect("glob failed") {
+    let mut i = 0;
+    for entry in glob("tests/testdata/typecheck/good/*.gol").expect("glob failed") {
+        i = i + 1;
         let path = entry.expect("failed to glob path");
         println!("checking: {}...", path.display());
-    }
-    let tests = vec![
-            ("1", "int"),
-            ("true", "bool"),
-            ("add(1, 1)", "int"),
-            ("fn(x : int, y : int) { add(x,y) }", "int -> int -> int"),
-            (
-                "fn(fact: int -> int, x: int) {
-                   if iszero(x) {
-                     1
-                   } else {
-                     mul(x, fact(dec(x)))
-                   }
-                 }",
-                "(int -> int) -> int -> int",
-            ),
-            (
-                "fn(Y: ((int -> int) -> int -> int) -> int -> int, f: (int -> int) -> int -> int) {
-                   Y(f)
-                 }"
-                ,"(((int -> int) -> int -> int) -> int -> int) -> ((int->int) -> int -> int) -> int -> int",
-            )
-        ];
-    for (src, expect) in tests {
-        let path = &format!("test: {}", src);
-        match (parser::parse(path, src), parser::parse_type(path, expect)) {
+        let src = read_file(&path);
+        let mut expect_path = path.clone();
+        expect_path.set_extension("expect");
+        let expect_src = read_file(&expect_path);
+
+        match (parser::parse(path.to_str().unwrap(), &src), parser::parse_type(expect_path.to_str().unwrap(), &expect_src)) {
             (Ok(ast), Ok(ty_ast)) => {
                 println!("test: {}", src);
                 let got = typecheck::typecheck(&globals::global_env(), &ast);
@@ -61,10 +43,29 @@ fn test_typecheck() {
                 );
             }
             (Err(err), _) => assert!(false, format!("parse({}): {:?}", src, err)),
-            (_, Err(err)) => assert!(false, format!("parse_type({}): {:?}", expect, err)),
+            (_, Err(err)) => assert!(false, format!("parse_type({}): {:?}", expect_src, err)),
         }
     }
+    assert!(i > 0, "found no examples!");
 }
 
 #[test]
-fn test_bad() {}
+fn test_bad() {
+    let mut i = 0;
+    for entry in glob("tests/testdata/typecheck/bad/*.gol").expect("glob failed") {
+         i= i +1;
+        let path = entry.expect("failed to glob path");
+        println!("checking: {}...", path.display());
+        let src = read_file(&path);
+        let ast = parser::parse(path.to_str().unwrap(), &src).expect("parse ok");
+        match typecheck::typecheck(&globals::global_env(), &ast) {
+            Err(_) => {
+                // OK
+            },
+            Ok(ty) => {
+                assert!(false, format!("typecheck({}) = {:?}", path.display(), ty))
+            }
+        }
+    }
+    assert!(i > 0, "found no examples!");
+}

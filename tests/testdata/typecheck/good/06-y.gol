@@ -1,0 +1,3 @@
+fn(Y: ((int -> int) -> int -> int) -> int -> int, f: (int -> int) -> int -> int) {
+  Y(f)
+}

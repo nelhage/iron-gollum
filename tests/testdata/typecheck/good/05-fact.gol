@@ -1,0 +1,7 @@
+fn(fact: int -> int, x: int) {
+  if iszero(x) {
+    1
+  } else {
+    mul(x, fact(dec(x)))
+  }
+}
