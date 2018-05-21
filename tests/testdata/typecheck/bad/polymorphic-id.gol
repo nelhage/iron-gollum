@@ -1,0 +1,6 @@
+(fn(f, seq) {
+ seq(f(0), f(false))
+})(
+ fn(x){x},
+ fn(x,y){false}
+)

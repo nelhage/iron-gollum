@@ -175,17 +175,23 @@ impl<'a, 'b> Typecheck<'a> {
                 Ok(rng)
             }
             ast::AST::Abstraction(_, ref arg, ref body) => {
-                if let ast::AST::Ascription(_, ref vbox, ref ty) = **arg {
-                    let ty = self.ast_to_type(&env, ty)?;
-
-                    if let ast::AST::Variable(_, ref var) = **vbox {
-                        let frame = TypeEnv::with_bindings(&env, &[(var.clone(), Rc::clone(&ty))]);
-                        let result_ty = self.typecheck(&frame, body)?;
-                        return Ok(Rc::new(types::Type::Function(Rc::clone(&ty), result_ty)));
-                    }
-                }
-
-                Err(TypeError::BadDecl(arg.loc()))
+                let (ty, var) = match **arg {
+                    ast::AST::Ascription(_, ref vbox, ref ty) => {
+                        let ty = self.ast_to_type(&env, ty)?;
+                        if let ast::AST::Variable(_, ref var) = **vbox {
+                            (ty, var)
+                        } else {
+                            panic!("unexpected ast");
+                        }
+                    },
+                    ast::AST::Variable(_, ref name) => {
+                        (self.genvar(name.clone()), name)
+                    },
+                    _ => panic!("unexpected ast")
+                };
+                let frame = TypeEnv::with_bindings(&env, &[(var.clone(), Rc::clone(&ty))]);
+                let result_ty = self.typecheck(&frame, body)?;
+                Ok(Rc::new(types::Type::Function(Rc::clone(&ty), result_ty)))
             }
             ast::AST::If(_, ref cond, ref cons, ref alt) => {
                 let cond_ty = self.typecheck(&env, cond)?;
